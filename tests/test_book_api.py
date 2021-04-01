@@ -3,7 +3,7 @@ import unittest
 import json
 from flask_sqlalchemy import SQLAlchemy
 from bookshelf import create_app
-from bookshelf.models import setup_db
+from models import setup_db
 
 class BookTestCase(unittest.TestCase):
   # This Class represents the book shelf test case
@@ -28,4 +28,19 @@ class BookTestCase(unittest.TestCase):
       pass
 
     def test_get_paginated_books(self):
-      pass
+      res = self.client.get('/books')
+      data = json.loads(res.data)
+
+      self.assertEqual(res.status_code, 200)
+      self.assertEqual(data['success'], True)
+      self.assertEqual(data['total_books'])
+      self.assertEqual(len(data['books']))
+
+    def test_404_requesting_beyond_valid_page():
+      res = self.client.get('/books?page=1000', json={'rating': 1})
+      data = json.loads(res.data)
+      self.assertEqual(res.status_code, 404)
+      self.assertEqual(data['success'], False)
+      self.assertEqual(data['message'], 'resource not found')
+
+    # def test_update_book_rating():
